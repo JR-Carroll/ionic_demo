@@ -37,11 +37,7 @@ function GEOLocationContainer<Props>(props : Props ) {
     }
 
     async function getGEOLocation() {
-        var watchId = await Geolocation.watchPosition({}, (position, err) => {
-            
-            if (err) {
-                console.log(err);
-            }
+        var watchId = await Geolocation.getCurrentPosition().then(position => {
 
             var _coords = [position?.coords.longitude || 0, position?.coords.latitude || 0];
 
