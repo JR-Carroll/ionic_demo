@@ -26,7 +26,7 @@ function GEOLocationContainer<Props>(props : Props ) {
 
         // If permission is not given, then let's ask for permission!
         if (permissionSet.location != 'granted') {
-            Geolocation.requestPermissions();
+            var permissionResp = await Geolocation.requestPermissions();
         }
     }
 
