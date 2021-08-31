@@ -16,8 +16,19 @@ function GEOLocationContainer<Props>(props : Props ) {
     const errorMessage = "We're sorry, we couldn't get your coords. Did you enable location sharing?";
 
     useEffect(() => {
+        setupGEOLocation()
         getGEOLocation();
     }, []);
+
+    async function setupGEOLocation() {
+        // Check permissions first...
+        var permissionSet = await Geolocation.checkPermissions();
+
+        // If permission is not given, then let's ask for permission!
+        if (permissionSet.location != 'granted') {
+            Geolocation.requestPermissions();
+        }
+    }
 
     async function getGEOLocation() {
         var coordinates = await Geolocation.getCurrentPosition().then(data => {
@@ -26,18 +37,18 @@ function GEOLocationContainer<Props>(props : Props ) {
             // Leaving geo{} in console.log so the customer can see the object.
             console.log("My coords...", data);
 
-            // Set React States so it properly shows.
+            // Set React states so it properly shows/interacts with the user.
             setLastRet(new Date(data.timestamp))
             setCoords(_coords);
             setShowError(false);
         }).catch( err => {
+            console.error(err); // Showing the error in console for good measure.
             setShowError(true);
         });
         return coordinates
     }
 
     function refreshGEOLocation() {
-        console.log("refreshing...");
         setCoords([]);
         getGEOLocation();
     }
@@ -58,15 +69,14 @@ function GEOLocationContainer<Props>(props : Props ) {
                     </Col>
                 </Row>
 
-                { showError ? 
-                    <Row>
-                        <Col>
-                            <Message negative>
-                                <Message.Header>Ek! Something went wrong...</Message.Header>
-                                <p>{errorMessage}</p>
-                            </Message>
-                        </Col>
-                    </Row> : null }
+                <Row style={{visibility: showError ? "visible" : "hidden"}}>
+                    <Col>
+                        <Message negative>
+                            <Message.Header>Ek! Something went wrong...</Message.Header>
+                            <p>{errorMessage}</p>
+                        </Message>
+                    </Col>
+                </Row>
                 
             </Container>
         )
