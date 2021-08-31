@@ -1,0 +1,7 @@
+{
+  "name": "new-location-test-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
