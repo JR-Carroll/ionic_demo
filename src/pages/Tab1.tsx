@@ -20,7 +20,7 @@ const Tab1: React.FC = () => {
             <IonTitle size="large">{pageName}</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <GEOLocationContainer />
+        <GEOLocationContainer render={false} />
       </IonContent>
     </IonPage>
   );
