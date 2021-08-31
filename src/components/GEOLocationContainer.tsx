@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Geolocation } from '@capacitor/geolocation';
+import { Button } from 'semantic-ui-react'
+
 // import './ExploreContainer.css';
 
 // interface ContainerProps {
@@ -21,7 +23,9 @@ interface Props {
 function GEOLocationContainer<Props>( render: Props ) {
     const [coords, setCoords] = useState<Array<number>>([]); // [long, lat]
     const [lastRet, setLastRet] = useState<Date>();
+    const [showError, setShowError] = useState<boolean>(false);
     const retrievingMessage = "Retrieving...";
+    const errorMessage = "We're sorry, we couldn't get your coords. Did you enable location sharing?";
 
     useEffect(() => {
         getGEOLocation();
@@ -37,8 +41,17 @@ function GEOLocationContainer<Props>( render: Props ) {
             // Set React States so it properly shows.
             setLastRet(new Date(data.timestamp))
             setCoords(_coords);
+        }).catch( err => {
+            console.log(err);
+            setShowError(true);
         });
         return coordinates
+    }
+
+    function refreshGEOLocation() {
+        console.log("refreshing...");
+        setCoords([]);
+        getGEOLocation();
     }
 
     return (
@@ -46,6 +59,7 @@ function GEOLocationContainer<Props>( render: Props ) {
             <p>long: {coords.length != 0 ? coords[0] : retrievingMessage}</p>
             <p>lat: {coords.length != 0 ? coords[1] : retrievingMessage}</p>
             <p><i>Last Retrieved:</i> {lastRet?.toLocaleString()}</p>
+            <Button primary onClick={refreshGEOLocation}>Update</Button>
         </div>
     )
 }

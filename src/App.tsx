@@ -32,6 +32,7 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import 'semantic-ui-css/semantic.min.css'
 import React from 'react';
 
 const App: React.FC = () => (
