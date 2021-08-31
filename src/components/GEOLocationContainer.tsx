@@ -16,8 +16,7 @@ function GEOLocationContainer<Props>(props : Props ) {
     const errorMessage = "We're sorry, we couldn't get your coords. Did you enable location sharing?";
 
     useEffect(() => {
-        setupGEOLocation()
-        getGEOLocation();
+        refreshGEOLocation();
     }, []);
 
     async function setupGEOLocation() {
@@ -25,32 +24,55 @@ function GEOLocationContainer<Props>(props : Props ) {
         var permissionSet = await Geolocation.checkPermissions();
 
         // If permission is not given, then let's ask for permission!
-        if (permissionSet.location != 'granted') {
-            var permissionResp = await Geolocation.requestPermissions();
+        try {
+            if (permissionSet.location != 'granted') {
+                var permissionResp = await Geolocation.requestPermissions();
+            }
+            return true
+        } catch (err) {
+            console.log(err);
+            setShowError(true);
+            return false
         }
     }
 
     async function getGEOLocation() {
-        var coordinates = await Geolocation.getCurrentPosition().then(data => {
-            var _coords = [data.coords.longitude, data.coords.latitude];
+        var watchId = await Geolocation.watchPosition({}, (position, err) => {
             
+            if (err) {
+                console.log(err);
+            }
+
+            var _coords = [position?.coords.longitude || 0, position?.coords.latitude || 0];
+
             // Leaving geo{} in console.log so the customer can see the object.
-            console.log("My coords...", data);
+            console.log("My coords...", position?.timestamp);
 
             // Set React states so it properly shows/interacts with the user.
-            setLastRet(new Date(data.timestamp))
+            var timestamp = position?.timestamp || new Date();
+            setLastRet(new Date(timestamp));
             setCoords(_coords);
             setShowError(false);
-        }).catch( err => {
+
+            // Need to implement clearWatch();
+            
+        }).catch(err => {
             console.error(err); // Showing the error in console for good measure.
             setShowError(true);
         });
-        return coordinates
+
+        console.log(watchId);
+
+        return watchId
     }
 
-    function refreshGEOLocation() {
+    async function refreshGEOLocation() {
         setCoords([]);
-        getGEOLocation();
+        if (await setupGEOLocation()) {
+            await getGEOLocation();
+        } else {
+            console.log("something went wrong");
+        }
     }
 
     function toggleErrorMessage() {
@@ -61,8 +83,8 @@ function GEOLocationContainer<Props>(props : Props ) {
             <Container>
                 <Row>
                     <Col>
-                        <p><strong>long:</strong> {coords.length != 0 ? coords[0] :  <Loader active inline/>}</p>
-                        <p><strong>lat:</strong> {coords.length != 0 ? coords[1] :  <Loader active inline/>}</p>
+                        <strong>long:</strong> {coords.length != 0 ? coords[0] :  <Loader active inline/>}
+                        <br /><strong>lat:</strong> {coords.length != 0 ? coords[1] :  <Loader active inline/>}
                         <p><i><strong>Last Retrieved:</strong></i> {lastRet?.toLocaleString()}</p>
                         <Button primary onClick={refreshGEOLocation}>Fetch Latest Coords</Button>
                         <Button color="red" onClick={toggleErrorMessage}>Create Error on Demand</Button>
